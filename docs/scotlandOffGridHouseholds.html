@@ -1592,7 +1592,7 @@ div.tocify {
 <h1 class="title toc-ignore">Estimating the number of off grid households</h1>
 <h3 class="subtitle">Scotland</h3>
 <h4 class="author">Ben Anderson (<a href="mailto:b.anderson@soton.ac.uk" class="email">b.anderson@soton.ac.uk</a> <code>@dataknut</code>)</h4>
-<h4 class="date">Last run at: 2020-03-26 12:52:14</h4>
+<h4 class="date">Last run at: 2020-03-26 13:00:04</h4>
 
 </div>
 
@@ -1673,32 +1673,9 @@ div.tocify {
 
 t &lt;- censusDT[, .(zonecode, `Unoccupied household spaces: Total`, `Occupied household spaces`, 
     `All household spaces`, nHHspaces2011)]
-t[order(zonecode)]</code></pre>
-<pre><code>##        zonecode Unoccupied household spaces: Total Occupied household spaces
-##    1: S01006506                                 28                       424
-##    2: S01006507                                  1                       364
-##    3: S01006508                                 11                       340
-##    4: S01006509                                  8                       274
-##    5: S01006510                                 12                       256
-##   ---                                                                       
-## 6972: S01013477                                 13                       303
-## 6973: S01013478                                  2                       358
-## 6974: S01013479                                  7                       428
-## 6975: S01013480                                 10                       302
-## 6976: S01013481                                  6                       189
-##       All household spaces nHHspaces2011
-##    1:                  452           452
-##    2:                  365           365
-##    3:                  351           351
-##    4:                  282           282
-##    5:                  268           268
-##   ---                                   
-## 6972:                  316           316
-## 6973:                  360           360
-## 6974:                  435           435
-## 6975:                  312           312
-## 6976:                  195           195</code></pre>
-<pre class="r"><code>kableExtra::kable(head(t), caption = &quot;Census data check (first 6 rows)&quot;) %&gt;% kable_styling()</code></pre>
+t &lt;- t[order(zonecode)]
+
+kableExtra::kable(head(t), caption = &quot;Census data check (first 6 rows)&quot;) %&gt;% kable_styling()</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:calc">Table 4.1: </span>Census data check (first 6 rows)
@@ -1828,20 +1805,9 @@ S01006511
 </tbody>
 </table>
 <pre class="r"><code>t &lt;- beisDT[, .(zonecode, METERS)]
-t[order(zonecode)]</code></pre>
-<pre><code>##          zonecode METERS
-##      1: E01000001   1058
-##      2: E01000001   1058
-##      3: E01000001   1057
-##      4: E01000001   1057
-##      5: E01000001   1057
-##     ---                 
-## 375531: W01001958    929
-## 375532: W01001958    929
-## 375533: W01001958    930
-## 375534: W01001958    979
-## 375535: W01001958    979</code></pre>
-<pre class="r"><code>kableExtra::kable(head(t), caption = &quot;BEIS data check (first 6 rows)&quot;) %&gt;% kable_styling()</code></pre>
+t &lt;- t[order(zonecode)]
+
+kableExtra::kable(head(t), caption = &quot;BEIS data check (first 6 rows)&quot;) %&gt;% kable_styling()</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:calc">Table 4.1: </span>BEIS data check (first 6 rows)
@@ -1930,7 +1896,7 @@ Figure 5.1: Histogram of Estimated number of off grid household spaces in Scotla
 Figure 5.2: Histogram of estimated percentage of household spaces which are off grid in Scotland in 2011
 </p>
 </div>
-<p>Naturally this turns itself into some quite large negative percentages (<a href="#fig:test2011pc">5.2</a>). Where are they and do they make any sense?</p>
+<p>Naturally this turns itself into some quite large negative percentages (Figure <a href="#fig:test2011pc">5.2</a>). Where are they and do they make any sense?</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:negTable2011">Table 5.1: </span>Ten largest negative estimates
@@ -2415,7 +2381,7 @@ Figure 5.4: Histogram of Estimated number of off grid household spaces in Scotla
 Figure 5.5: Histogram of estimated percentage of household spaces which are off grid in Scotland in 2018
 </p>
 </div>
-<p>Figure <a href="#fig:test2018pc">5.5</a>) has got some very large negative values!</p>
+<p>Figure <a href="#fig:test2018pc">5.5</a> has got some very large negative values!</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <caption>
 <span id="tab:negTable2018">Table 5.3: </span>Ten largest negative estimates
@@ -2880,7 +2846,7 @@ City of Edinburgh
 Figure 5.6: Boxplot of estimated % of households off-grid by local authority
 </p>
 </div>
-<p>Figure <a href="#fig:negSummary2018">5.6</a></p>
+<p>Figure <a href="#fig:negSummary2018">5.6</a> is just as curious…</p>
 <p>Did we get our maths wrong? Not according to Table <a href="#tab:negTable2018">5.3</a>…</p>
 </div>
 </div>
@@ -2891,20 +2857,18 @@ Figure 5.6: Boxplot of estimated % of households off-grid by local authority
 <blockquote>
 <p>The number of meters does not exactly equal the number of properties. The reasons for this are as follows:</p>
 </blockquote>
-<ul>
-<li><ol style="list-style-type: decimal">
-<li>An apartment building may have a meter for the building complex (used to power communal electricity uses such as lighting) in addition to each individual apartment having its own meter.<br />
-</li>
+<blockquote>
+<ol style="list-style-type: decimal">
+<li>An apartment building may have a meter for the building complex (used to power communal electricity uses such as lighting) in addition to each individual apartment having its own meter.</li>
 </ol>
-<ul>
-<li><ol start="2" style="list-style-type: decimal">
+</blockquote>
+<blockquote>
+<ol start="2" style="list-style-type: decimal">
 <li>Some households may have a 3-rate meter system. A household with such a system will have one meter which measures all consumption at a peak rate and another meter which measures two other rates of off-peak consumption. This is the case for many households in Scotland, but it is less common to find a similar case in England or Wales.</li>
-</ol></li>
-</ul></li>
-</ul>
-<p>So…</p>
-<p>Suggestions:
-* try aggregating everything to higher zone levels? But given the errors we see here even in 2011, why would that help?</p>
+</ol>
+</blockquote>
+<p>So that’s why…</p>
+<p>Now what?</p>
 </div>
 <div id="annex" class="section level1">
 <h1><span class="header-section-number">7</span> Annex</h1>
@@ -3879,7 +3843,7 @@ year
 </div>
 <div id="runtime" class="section level1">
 <h1><span class="header-section-number">8</span> Runtime</h1>
-<p>Analysis completed in 7.682 seconds ( 0.13 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.6.3 (2020-02-29) running on x86_64-apple-darwin15.6.0.</p>
+<p>Analysis completed in 8.467 seconds ( 0.14 minutes) using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a> with R version 3.6.3 (2020-02-29) running on x86_64-apple-darwin15.6.0.</p>
 </div>
 <div id="r-environment" class="section level1">
 <h1><span class="header-section-number">9</span> R environment</h1>

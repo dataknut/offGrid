@@ -143,13 +143,13 @@ Here's the code - just to be sure!
 # subtract n elec meters from n household spaces
 
 t <- censusDT[, .(zonecode, `Unoccupied household spaces: Total`, `Occupied household spaces`, `All household spaces`, nHHspaces2011)]
-t[order(zonecode)]
+t <- t[order(zonecode)]
 
 kableExtra::kable(head(t), caption = "Census data check (first 6 rows)") %>%
   kable_styling()
 
 t <- beisDT[, .(zonecode, METERS)]
-t[order(zonecode)]
+t <- t[order(zonecode)]
 
 kableExtra::kable(head(t), caption = "BEIS data check (first 6 rows)") %>%
   kable_styling()
@@ -185,7 +185,7 @@ ggplot2::ggplot(dt2011, aes(x = estimatedPcHHSpacesOffGrid)) +
 
 ```
 
-Naturally this turns itself into some quite large negative percentages (\@ref(fig:test2011pc)). Where are they and do they make any sense?
+Naturally this turns itself into some quite large negative percentages (Figure \@ref(fig:test2011pc)). Where are they and do they make any sense?
 
 ```{r negTable2011}
 t <- dt2011[,.(LAName,LSOAName, METERS, nHHspaces2011,
@@ -242,7 +242,7 @@ ggplot2::ggplot(dt2018, aes(x = estimatedPcHHSpacesOffGrid)) +
 
 ```
 
-Figure \@ref(fig:test2018pc)) has got some very large negative values!
+Figure \@ref(fig:test2018pc) has got some very large negative values!
 
 ```{r negTable2018}
 t <- dt2018[,.(LAName, LSOAName, METERS, nHHspaces2011,
@@ -272,7 +272,7 @@ ggplot2::ggplot(dt2011, aes(x = LAName,y = estimatedPcHHSpacesOffGrid)) +
   coord_flip()
 ```
 
-Figure \@ref(fig:negSummary2018) 
+Figure \@ref(fig:negSummary2018) is just as curious...
 
 Did we get our maths wrong? Not according to Table \@ref(tab:negTable2018)...
 
@@ -282,15 +282,15 @@ Don't you hate it when a good idea goes belly-up.
 
 So what's going on? The [BEIS methodology report](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853104/sub-national-methodology-guidance.pdf) says:
 
->The number of meters does not exactly equal the number of properties. The reasons for this are as follows:
+> The number of meters does not exactly equal the number of properties. The reasons for this are as follows:
 
-  * 1.    An apartment building may have a meter for the building complex (used to power communal electricity uses such as lighting) in addition to each individual apartment having its own meter.  
-  * 2. Some households may have a 3-rate meter system. A household with such a system will have one meter which measures all consumption at a peak rate and another meter which measures two other rates of off-peak consumption. This is the case for many households in Scotland, but it is less common to find a similar case in England or Wales.
+> 1. An apartment building may have a meter for the building complex (used to power communal electricity uses such as lighting) in addition to each individual apartment having its own meter.
+  
+> 2. Some households may have a 3-rate meter system. A household with such a system will have one meter which measures all consumption at a peak rate and another meter which measures two other rates of off-peak consumption. This is the case for many households in Scotland, but it is less common to find a similar case in England or Wales.
 
-So...
+So that's why...
 
-Suggestions:
- * try aggregating everything to higher zone levels? But given the errors we see here even in 2011, why would that help?
+Now what?
 
 # Annex
 
