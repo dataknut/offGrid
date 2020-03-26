@@ -137,6 +137,28 @@ If we assume:
 
 Then in theory we can estimate the number who are off grid. Of course some may be 'off grid' but still have a meter. And it is crucial that we have an accurate estimate of the number of household spaces to match to the BEIS data. Of course we only have that at datazone level for 2011...as we will see.
 
+Here's the code - just to be sure!
+
+```{r calc, echo=TRUE}
+# subtract n elec meters from n household spaces
+
+t <- censusDT[, .(zonecode, `Unoccupied household spaces: Total`, `Occupied household spaces`, `All household spaces`, nHHspaces2011)]
+t[order(zonecode)]
+
+kableExtra::kable(head(t), caption = "Census data check (first 6 rows)") %>%
+  kable_styling()
+
+t <- beisDT[, .(zonecode, METERS)]
+t[order(zonecode)]
+
+kableExtra::kable(head(t), caption = "BEIS data check (first 6 rows)") %>%
+  kable_styling()
+
+scotlandDT[, estimatednHHSpacesOffGrid := nHHspaces2011 - METERS]
+scotlandDT[, estimatedPcHHSpacesOffGrid := 100 * ( estimatednHHSpacesOffGrid/nHHspaces2011)]
+```
+
+
 # Results
 
 ## 2011
@@ -144,9 +166,6 @@ Then in theory we can estimate the number who are off grid. Of course some may b
 This should be the 'most accurate' year as the data sources match.
 
 ```{r test2011, fig.cap="Histogram of Estimated number of off grid household spaces in Scotland in 2011"}
-
-scotlandDT[, estimatednHHSpacesOffGrid := nHHspaces2011 - METERS]
-scotlandDT[, estimatedPcHHSpacesOffGrid := 100 * ( estimatednHHSpacesOffGrid/nHHspaces2011)]
 
 dt2011 <- scotlandDT[year == 2011]
 
@@ -260,6 +279,15 @@ Did we get our maths wrong? Not according to Table \@ref(tab:negTable2018)...
 # Conclusion
 
 Don't you hate it when a good idea goes belly-up.
+
+So what's going on? The [BEIS methodology report](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/853104/sub-national-methodology-guidance.pdf) says:
+
+>The number of meters does not exactly equal the number of properties. The reasons for this are as follows:
+
+  * 1.    An apartment building may have a meter for the building complex (used to power communal electricity uses such as lighting) in addition to each individual apartment having its own meter.  
+  * 2. Some households may have a 3-rate meter system. A household with such a system will have one meter which measures all consumption at a peak rate and another meter which measures two other rates of off-peak consumption. This is the case for many households in Scotland, but it is less common to find a similar case in England or Wales.
+
+So...
 
 Suggestions:
  * try aggregating everything to higher zone levels? But given the errors we see here even in 2011, why would that help?
