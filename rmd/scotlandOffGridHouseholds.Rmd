@@ -1,0 +1,312 @@
+---
+params:
+  subtitle: ""
+  title: ""
+  authors: ""
+title: '`r params$title`'
+subtitle: '`r params$subtitle`'
+author: '`r params$authors`'
+date: 'Last run at: `r lubridate::now()`'
+output:
+  bookdown::html_document2:
+    fig_caption: yes
+    code_folding: hide
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    toc_float: TRUE
+  bookdown::pdf_document2:
+    fig_caption: yes
+    number_sections: yes
+bibliography: '`r path.expand("~/bibliography.bib")`'
+---
+
+```{r knitrSetUp, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE) # do not echo code
+knitr::opts_chunk$set(warning = TRUE)
+knitr::opts_chunk$set(message = TRUE)
+knitr::opts_chunk$set(fig_caption = TRUE)
+knitr::opts_chunk$set(fig_height = 6) # default, make it bigger to stretch vertical axis
+knitr::opts_chunk$set(fig_width = 8) # full width
+knitr::opts_chunk$set(tidy = TRUE) # tidy up code in case echo = TRUE
+```
+
+```{r codeSetup, include=FALSE}
+
+# library(SAVEr) # already loaded in makeFile
+
+# Set start time ----
+startTime <- proc.time()
+
+# What are we running on?
+sysInfo <- Sys.info()
+sysName <- sysInfo[[1]]
+nodeName <- sysInfo[[4]]
+userName <- sysInfo[[7]]
+
+# Functions ----
+
+# Where are we?
+
+# give feedback
+print(paste0("Running on ", sysName, " with projLoc = ", myParams$projLoc))
+
+# Local libraries ----
+library(ggplot2) # for fancy graphs
+library(kableExtra) # for better kable
+library(lubridate) # for date stuff
+library(skimr) # for data dictionaries
+
+# Local parameters ----
+
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/#a-colorblind-friendly-palette
+# with grey
+myParams$cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# with black
+myParams$cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+\newpage
+
+> Citation
+
+If you wish to use any of the material from this report please cite as:
+
+ * Anderson, B.(`r lubridate::year(lubridate::now())`) `r params$title`: `r params$subtitle`, SERG: University of Southampton.
+
+\newpage
+
+# About
+
+Circulation:
+
+ * Public
+
+## Purpose
+
+This report is intended to: 
+
+ * estimate the number of off-grid households in Scotland;
+ * with a specific focus on the Highlands & Islands
+
+This work was carried out by the [Sustainable Energy Research Group](http://www.energy.soton.ac.uk) in the University of Southampton's [Faculty of Engineering and Environment](http://www.southampton.ac.uk/engineering/index.page). 
+
+## History
+
+Generally tracked via [github](https://github.com/dataknut/offGrid/commits/master)
+ 
+## Re-use
+
+The work is (c) `r lubridate::year(lubridate::now())` the University of Southampton.
+
+The work is published under the Creative Commons Attribution-ShareAlike 4.0 International ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)) License.
+
+ * You are free to:
+    * Share — copy and redistribute the material in any medium or format;
+    * Adapt — remix, transform, and build upon the material;
+ * for any purpose, even commercially.
+
+
+Under the following terms:
+
+ * Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use. 
+ * ShareAlike — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
+ * No additional restrictions — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
+
+Re-use of the software code contained within this work is governed by an additional [license](https://github.com/dataknut/offGrid/blob/master/LICENSE).
+
+\newpage
+
+# Introduction
+
+It started with a tweet:
+
+ * https://twitter.com/hannon_matthew/status/1242790919818153984
+
+# Data used
+
+ * Census 2011 data on the [number of household spaces for Scotland at datazone level](https://www.scotlandscensus.gov.uk/ods-web/download/getDownloadFile.html?downloadFileIds=SNS%20Data%20Zone%202011%20blk);
+ * BEIS 2010 - 2018 data on the [number of electricty meters at datazone level](https://www.gov.uk/government/collections/sub-national-electricity-consumption-data).
+
+# Method
+
+If we assume:
+
+ * the number of household spaces off grid = n household spaces - n meters
+
+Then in theory we can estimate the number who are off grid. Of course some may be 'off grid' but still have a meter. And it is crucial that we have an accurate estimate of the number of household spaces to match to the BEIS data. Of course we only have that at datazone level for 2011...as we will see.
+
+# Results
+
+## 2011
+
+This should be the 'most accurate' year as the data sources match.
+
+```{r test2011, fig.cap="Histogram of Estimated number of off grid household spaces in Scotland in 2011"}
+
+scotlandDT[, estimatednHHSpacesOffGrid := nHHspaces2011 - METERS]
+scotlandDT[, estimatedPcHHSpacesOffGrid := 100 * ( estimatednHHSpacesOffGrid/nHHspaces2011)]
+
+dt2011 <- scotlandDT[year == 2011]
+
+ggplot2::ggplot(dt2011, aes(x = estimatednHHSpacesOffGrid)) +
+  geom_histogram() +
+  labs(x = "Estimated number of off grid household spaces")
+
+```
+
+Well, that's already interesting. We seem to have more meters than household spaces in a lot of places.
+
+```{r test2011pc, fig.cap="Histogram of estimated percentage of household spaces which are off grid in Scotland in 2011"}
+
+ggplot2::ggplot(dt2011, aes(x = estimatedPcHHSpacesOffGrid)) +
+  geom_histogram() +
+  labs(x = "Estimated % of household spaces which are off-grid")
+
+```
+
+Naturally this turns itself into some quite large negative percentages (\@ref(fig:test2011pc)). Where are they and do they make any sense?
+
+```{r negTable2011}
+t <- dt2011[,.(LAName,LSOAName, METERS, nHHspaces2011,
+                    estimatedPcHHSpacesOffGrid)]
+
+t <- t[order(estimatedPcHHSpacesOffGrid)]
+
+kableExtra::kable(head(t, 10), caption = "Ten largest negative estimates") %>%
+  kable_styling()
+```
+
+```{r negSummary2011, fig.cap = "Boxplot of estimated % of households off-grid by local authority"}
+t <- dt2011[,.(nZones = .N, meanMeters = mean(METERS),
+               meanHHspaces = mean(nHHspaces2011),
+               mean_pc_offgrid = mean(estimatedPcHHSpacesOffGrid),
+               min_pc_offgrid = min(estimatedPcHHSpacesOffGrid),
+               max_pc_offgrid = max(estimatedPcHHSpacesOffGrid)),
+            keyby = .(LAName)]
+
+t <- t[order(mean_pc_offgrid)]
+
+kableExtra::kable(head(t, 10), caption = "Summary by local authority") %>%
+  kable_styling()
+
+ggplot2::ggplot(dt2011, aes(x = LAName,y = estimatedPcHHSpacesOffGrid)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+Well, Figure \@ref(fig:negSummary2011) makes no sense to me at all. It suggets that the median off-grid % in all local authorities in Scotland is slightly negative. Shetland & Orkneys are outliers. We might have expected them to be outliers in the other direction. Did we get our maths wrong? Not according to Table \@ref(tab:negTable2011)...
+
+## 2018
+
+Let's got to the other extreme and repeat. By now we are 7 years since Census 2011 so our household space counts should be well out of date.
+
+
+```{r test2018, fig.cap="Histogram of Estimated number of off grid household spaces in Scotland in 2018"}
+
+dt2018 <- scotlandDT[year == 2018]
+
+ggplot2::ggplot(dt2018, aes(x = estimatednHHSpacesOffGrid)) +
+  geom_histogram() +
+  labs(x = "Estimated number of off grid household spaces")
+
+```
+
+Much the same.
+
+```{r test2018pc, fig.cap="Histogram of estimated percentage of household spaces which are off grid in Scotland in 2018"}
+
+ggplot2::ggplot(dt2018, aes(x = estimatedPcHHSpacesOffGrid)) +
+  geom_histogram() +
+  labs(x = "Estimated % of household spaces which are off-grid")
+
+```
+
+Figure \@ref(fig:test2018pc)) has got some very large negative values!
+
+```{r negTable2018}
+t <- dt2018[,.(LAName, LSOAName, METERS, nHHspaces2011,
+                    estimatedPcHHSpacesOffGrid)]
+
+t <- t[order(estimatedPcHHSpacesOffGrid)]
+
+kableExtra::kable(head(t, 10), caption = "Ten largest negative estimates") %>%
+  kable_styling()
+```
+
+```{r negSummary2018, fig.cap = "Boxplot of estimated % of households off-grid by local authority"}
+t <- dt2018[,.(nZones = .N, meanMeters = mean(METERS),
+               meanHHspaces = mean(nHHspaces2011),
+               mean_pc_offgrid = mean(estimatedPcHHSpacesOffGrid),
+               min_pc_offgrid = min(estimatedPcHHSpacesOffGrid),
+               max_pc_offgrid = max(estimatedPcHHSpacesOffGrid)),
+            keyby = .(LAName)]
+
+t <- t[order(mean_pc_offgrid)]
+
+kableExtra::kable(head(t, 10), caption = "Summary by local authority") %>%
+  kable_styling()
+
+ggplot2::ggplot(dt2011, aes(x = LAName,y = estimatedPcHHSpacesOffGrid)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+Figure \@ref(fig:negSummary2018) 
+
+Did we get our maths wrong? Not according to Table \@ref(tab:negTable2018)...
+
+# Conclusion
+
+Don't you hate it when a good idea goes belly-up.
+
+Suggestions:
+ * try aggregating everything to higher zone levels? But given the errors we see here even in 2011, why would that help?
+
+# Annex
+
+## Data summaries
+
+Census
+
+```{r skim.census}
+skimr::skim(censusDT)
+```
+
+BEIS
+
+```{r skim.beis}
+skimr::skim(beisDT)
+```
+
+
+# Runtime
+
+
+```{r check runtime}
+t <- proc.time() - startTime
+
+elapsed <- t[[3]]
+```
+
+Analysis completed in `r elapsed` seconds ( `r round(elapsed/60,2)` minutes) using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com) with `r R.version.string` running on `r R.version$platform`.
+
+# R environment
+
+R packages used:
+
+ * base R - for the basics [@baseR]
+ * data.table - dataframes on steroids [@data.table]
+ * ggplot2 - for slick graphics [@ggplot2]
+ * kableExtra - fancy tables [@kableExtra]
+ * knitr - to create this document [@knitr]
+ * lubridate - date stuff [@lubridate]
+ * skimr - data summaries [@skimr]
+ 
+```{r sessionInfo}
+sessionInfo()
+```
+
+# References
+
