@@ -10,8 +10,8 @@ library(bookdown) # for fancy knit
 # Project Settings ----
 myParams <- list()
 myParams$projLoc <- here::here()
-myParams$beisPath <- "~/Data/DECC/SubnationalEnergyData/2010-2018/LSOA_DOM_ELEC_csv/"
-myParams$censusPath <- "/Users/ben/Data/UK_Census/2011Data/scotland/SNS Data Zone 2011 blk/"
+myParams$beisPath <- "~/Data/DECC/SubnationalEnergyData"
+myParams$censusPath <- "~/Data/UK_Census/2011Data/scotland/SNS Data Zone 2011 blk/"
 
 # functions ----
 
@@ -34,7 +34,8 @@ getBeisData <- function(){
   allDT <- data.table::data.table() # place to put data
   for(y in 2010:2018){
     message("Loading BEIS LSOA level elec: ", y)
-    dt <- data.table::fread(paste0(myParams$beisPath, "LSOA_ELEC_",y,".csv"))
+    dt <- data.table::fread(paste0(myParams$beisPath, 
+                                   "/2010-2018/LSOA_DOM_ELEC_csv/LSOA_ELEC_",y,".csv"))
     dt[, zonecode := LSOACode]
     dt[, year := y]
     allDT <- rbind(allDT, dt)
@@ -42,6 +43,10 @@ getBeisData <- function(){
   }
   return(allDT)
 }
+
+# try this one too
+oldElec2011DT <- data.table::fread(paste0(myParams$beisPath, 
+                                          "/2011/Lower_Layer_Super_Output_Area__LSOA__domestic_electricity_estimates_2011_All_data.csv"))
 
 doReport <- function(rmd){
   rmdFile <- paste0(myParams$projLoc, "/rmd/", rmd, ".Rmd")

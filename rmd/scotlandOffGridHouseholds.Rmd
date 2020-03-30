@@ -129,7 +129,7 @@ It started with a tweet:
  * Census 2011 data on the [number of household spaces for Scotland at datazone level](https://www.scotlandscensus.gov.uk/ods-web/download/getDownloadFile.html?downloadFileIds=SNS%20Data%20Zone%202011%20blk);
  * BEIS 2010 - 2018 data on the [number of electricty meters at datazone level](https://www.gov.uk/government/collections/sub-national-electricity-consumption-data).
 
-# Method
+# Method 1: counting meters
 
 If we assume:
 
@@ -159,9 +159,9 @@ scotlandDT[, estimatedPcHHSpacesOffGrid := 100 * ( estimatednHHSpacesOffGrid/nHH
 ```
 
 
-# Results
+## Results
 
-## 2011
+### 2011
 
 This should be the 'most accurate' year as the data sources match.
 
@@ -217,7 +217,7 @@ ggplot2::ggplot(dt2011, aes(x = LAName,y = estimatedPcHHSpacesOffGrid)) +
 
 Well, Figure \@ref(fig:negSummary2011) makes no sense to me at all. It suggets that the median off-grid % in all local authorities in Scotland is slightly negative. Shetland & Orkneys are outliers. We might have expected them to be outliers in the other direction. Did we get our maths wrong? Not according to Table \@ref(tab:negTable2011)...
 
-## 2018
+### 2018
 
 Let's got to the other extreme and repeat. By now we are 7 years since Census 2011 so our household space counts should be well out of date.
 
@@ -276,7 +276,7 @@ Figure \@ref(fig:negSummary2018) is just as curious...
 
 Did we get our maths wrong? Not according to Table \@ref(tab:negTable2018)...
 
-# Conclusion
+## Conclusion
 
 Don't you hate it when a good idea goes belly-up.
 
@@ -291,6 +291,35 @@ So what's going on? The [BEIS methodology report](https://assets.publishing.serv
 So that's why...
 
 Now what?
+
+ * ask BEIS to provide a count of properties with meters instead of just a count of meters? This must be possible because the [BEIS methodology document](https://www.gov.uk/government/publications/regional-energy-data-guidance-note) states:
+ 
+> "Meter postcode address file from ECOES: Geographic data is obtained for each meter from the Electricity Central Online Enquiry Service (ECOES) data file, which includes the address and postcode of each MPAN."
+
+# Method 2 - using 'old' data
+
+Previous versions of the LSOA/datazone level data (which no longer seem to be available from the BEIS [website](https://www.gov.uk/government/statistics/lower-and-middle-super-output-areas-electricity-consumption)) had more detail:
+
+```{r checkOld2011}
+names(oldElec2011DT)
+
+oldElec2011DT[, zonecode := `Lower Layer Super Output Area (LLSOA) Code`]
+setkey(oldElec2011DT, zonecode)
+
+head(oldElec2011DT)
+
+dt <- scotlandDT[year == 2011, .(METERS, zonecode, LAName)]
+setkey(dt, zonecode)
+
+message("New data: zonecodes beginning with 'S' (Scotland)")
+head(dt[zonecode %like% "S"])
+
+message("Old data: zonecodes beginning with 'S' (Scotland)")
+head(oldElec2011DT[zonecode %like% "S"])
+
+```
+
+Nope. The old data does not include Scotland...
 
 # Annex
 
